@@ -11,8 +11,8 @@ android {
         applicationId = "app.yatori.android"
         minSdk = 26
         targetSdk = 34
-        versionCode = 40
-        versionName = "0.4.0"
+        versionCode = 41
+        versionName = "0.4.1"
 
         ndk {
             abiFilters += listOf("arm64-v8a")
@@ -27,6 +27,14 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+    }
+
+    // Compress the large Go shared library in the APK. Android extracts it
+    // on install, so runtime behavior and the arm64-only ABI stay unchanged.
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
         }
     }
 

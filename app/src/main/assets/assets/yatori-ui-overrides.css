@@ -1,0 +1,42 @@
+/* Small compatibility overrides kept separate from the bundled v0.4.0-style UI. */
+.page > .card .log-area {
+  height: 340px;
+  max-height: 340px;
+  flex: 0 0 auto;
+}
+
+.logs-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.logs-page .log-center-area {
+  height: auto;
+  max-height: none;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+/* Desktop keeps account-level concurrency fixed in the task manager. Hide the
+   legacy Android-only editor while retaining the config field for compatibility. */
+.card:has(input[type="number"][min="1"][max="10"]) {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .table td {
+    border-bottom: 1px solid var(--border2) !important;
+  }
+
+  .table td:last-child {
+    border-bottom: none !important;
+  }
+
+  .page > .card .log-area {
+    height: 340px !important;
+    max-height: 340px !important;
+    flex: 0 0 auto !important;
+  }
+}

@@ -6,7 +6,7 @@
   "_minSupportedVersion说明": "低于此版本时提示升级。",
   "minSupportedVersion": "0.3.7",
   "_latestVersion说明": "当前最新版本号。",
-  "latestVersion": "0.4.0",
+  "latestVersion": "0.4.1",
   "_forceUpdate说明": "是否强制更新。true=必须更新后使用，false=仅提示。",
   "forceUpdate": false,
   "_softUpdate说明": "是否显示普通更新提示。",
@@ -16,7 +16,7 @@
   "_disabledMessage说明": "远程禁用时显示的提示。",
   "disabledMessage": "当前版本已停用，请前往 GitHub 下载最新版。",
   "_downloadUrl说明": "最新版下载地址。",
-  "downloadUrl": "https://github.com/yuanglove/yatori-go-android/releases/latest",
+  "downloadUrl": "https://github.com/yuanycr/yatori-go-android/releases/latest",
   "_updatedAt说明": "策略更新时间。",
   "updatedAt": "2026-07-07 22:50:00"
 }

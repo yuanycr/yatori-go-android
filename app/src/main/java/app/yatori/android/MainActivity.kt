@@ -19,6 +19,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.text.InputType
 import android.util.Base64
 import android.util.Log
@@ -54,10 +55,18 @@ class MainActivity : Activity() {
     private var examCodeDialog: AlertDialog? = null
     private var activeExamCodeRequestId: String? = null
     private val snoozedExamCodeRequests = mutableMapOf<String, Long>()
+    private val foregroundServiceHandler = Handler(Looper.getMainLooper())
+    @Volatile
+    private var activityResumed = false
+    @Volatile
+    private var foregroundRefreshPending = false
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Application normally performs this first; repeat it here for hosts
+        // that construct the Activity in an unusual test or preview process.
+        YatoriTime.configure()
         requestNotificationPermission()
 
         webView = WebView(this)
@@ -122,6 +131,26 @@ class MainActivity : Activity() {
         webView.loadUrl(APP_URL)
         showBlankPageHintIfNeeded()
         initEngineAsync()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        activityResumed = true
+        if (foregroundRefreshPending) {
+            foregroundRefreshPending = false
+            scheduleForegroundServiceRefresh()
+        }
+    }
+
+    override fun onPause() {
+        activityResumed = false
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        activityResumed = false
+        foregroundServiceHandler.removeCallbacksAndMessages(null)
+        super.onDestroy()
     }
 
     private fun showBlankPageHintIfNeeded() {
@@ -491,9 +520,43 @@ class MainActivity : Activity() {
     }
 
     fun refreshForegroundService() {
+        // This method is called from the Javascript bridge's worker thread.
+        // Never let a platform foreground-service restriction escape back to
+        // the main looper (Android 12+ throws when the app is backgrounded).
+        foregroundRefreshPending = true
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            scheduleForegroundServiceRefresh()
+        } else {
+            runOnUiThread { scheduleForegroundServiceRefresh() }
+        }
+    }
+
+    private fun scheduleForegroundServiceRefresh() {
+        if (!activityResumed || isFinishing || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isDestroyed)) {
+            return
+        }
+        foregroundServiceHandler.removeCallbacksAndMessages(null)
+        foregroundServiceHandler.postAtTime({
+            foregroundRefreshPending = false
+            startForegroundServiceSafely()
+        }, SystemClock.uptimeMillis() + 50L)
+    }
+
+    private fun startForegroundServiceSafely() {
+        if (isFinishing || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isDestroyed)) return
         val intent = Intent(this, YatoriForegroundService::class.java).setAction(YatoriForegroundService.ACTION_REFRESH)
-        runOnUiThread {
-            ContextCompat.startForegroundService(this, intent)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                ContextCompat.startForegroundService(this, intent)
+            } else {
+                startService(intent)
+            }
+        } catch (t: Throwable) {
+            // ForegroundServiceStartNotAllowedException (API 31+) and vendor
+            // SecurityExceptions are recoverable: keep the task alive and
+            // retry when the activity returns to the foreground.
+            foregroundRefreshPending = true
+            Log.w(TAG, "Foreground service start deferred: ${t.javaClass.simpleName}: ${t.message}")
         }
     }
 

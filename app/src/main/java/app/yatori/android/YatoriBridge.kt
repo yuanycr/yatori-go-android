@@ -4,6 +4,7 @@ import android.webkit.JavascriptInterface
 import mobilecore.Mobilecore
 import org.json.JSONArray
 import org.json.JSONObject
+import android.util.Log
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -69,8 +70,20 @@ class YatoriBridge(private val activity: MainActivity) {
     @JavascriptInterface
     fun callAsync(method: String, payload: String, callbackId: String) {
         Thread {
-            val result = call(method, payload)
-            activity.resolveBridgeCallback(callbackId, result)
+            val result = try {
+                // Keep asynchronous bridge failures inside the JSON contract.
+                // In particular, a vendor WebView may invoke this callback
+                // after the Activity has started shutting down.
+                call(method, payload)
+            } catch (t: Throwable) {
+                Log.e(TAG, "Async bridge call failed: $method", t)
+                error("ANDROID_BRIDGE_ERROR", t.message ?: t.javaClass.simpleName)
+            }
+            try {
+                activity.resolveBridgeCallback(callbackId, result)
+            } catch (t: Throwable) {
+                Log.w(TAG, "Unable to resolve async bridge callback: $callbackId", t)
+            }
         }.start()
     }
 
@@ -165,8 +178,8 @@ class YatoriBridge(private val activity: MainActivity) {
 
     private fun checkForUpdates(currentVersion: String): String {
         val current = normalizeVersion(currentVersion)
-        val releaseUrl = "https://api.github.com/repos/yuanglove/yatori-go-android/releases/latest"
-        val releasesPage = "https://github.com/yuanglove/yatori-go-android/releases"
+        val releaseUrl = "https://api.github.com/repos/yuanycr/yatori-go-android/releases/latest"
+        val releasesPage = "https://github.com/yuanycr/yatori-go-android/releases"
         return try {
             val connection = (URL(releaseUrl).openConnection() as HttpURLConnection).apply {
                 connectTimeout = 12000
@@ -218,6 +231,7 @@ class YatoriBridge(private val activity: MainActivity) {
     }
 
     companion object {
+        private const val TAG = "YatoriAndroid"
         private val noCoreMethods = setOf("GetDataDir", "OpenDataDir", "CheckForUpdates", "OpenURL")
     }
 }
