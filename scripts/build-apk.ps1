@@ -1,7 +1,7 @@
 ﻿param(
     [switch]$ImportCore,
     [string]$DesktopReleaseDir = "",
-    [string]$Version = "0.4.1",
+    [string]$Version = "0.4.2",
     [int]$ExpectedApiSchemaVersion = 1
 )
 

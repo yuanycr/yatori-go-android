@@ -8,7 +8,17 @@ Yatori Android 是 `yatori-go-desktop` 的移动端适配仓库，用来把桌�
 
 ## 当前版本
 
-v0.4.1
+v0.4.2
+
+## v0.4.2 更新重点
+
+- 与桌面版同步更新到 v0.4.2，Android `versionCode` 提升为 42。
+- 使用重新编译的 v0.4.2 mobilecore，上游核心锁定 `dca6f5d65861`，校验 AAR 的版本及 SHA-256。
+- 新增账号默认开启章节测试，默认关闭作业和考试；已有明确设置的账号不强制改动。
+- 全局最大并发账号数保持 5；保留原 Android UI，不替换成桌面版响应式界面。
+- 包含前次 v0.4.1 发布后的账号删除反馈修复，延续定时停止、日志实时刷新和原日志面板布局。
+- 本次先前的 v0.4.1 候选包已在 Redmi K20 Pro / Android 11 主用户下启动并完成核心/配置检查；用户反馈手动基本测试无明显问题。这不等于所有平台与题型均已覆盖。
+- 详细更新和验证边界见 [更新日志](CHANGELOG.md)。
 
 ## 本项目做了什么
 
@@ -114,7 +124,7 @@ Android 构建依赖桌面仓库生成的四个产物：
 
 ```text
 yatori-go-desktop/release/
-├── yatori-mobile-v0.4.1.aar
+├── yatori-mobile-v0.4.2.aar
 ├── api-schema.json
 ├── yatori-core-version.json
 └── yatori-mobilecore-checksums.json
@@ -163,11 +173,13 @@ Android 只调用 `mobilecore.Mobilecore` 暴露的方法。所有方法应返�
 
 ```json
 {
-  "androidVersion": "0.4.1",
-  "desktopCoreVersion": "0.4.1",
-  "coreCommit": "09f26d1",
+  "androidVersion": "0.4.2",
+  "desktopCoreVersion": "0.4.2",
+  "coreCommit": "dca6f5d65861",
+  "coreModuleVersion": "v0.0.0-20261026155051-dca6f5d65861",
+  "desktopCommit": "6f3b9d0",
   "apiSchemaVersion": 1,
-  "aarFile": "yatori-mobile-v0.4.1.aar",
+  "aarFile": "yatori-mobile-v0.4.2.aar",
   "aarSha256": "...",
   "target": "android/arm64",
   "androidApi": 24
@@ -194,7 +206,7 @@ cd "D:\AI\智能体工作目录\claude工作目录\学习\yatori-go-desktop-V0.3
 $env:PATH='D:\AI\智能体工作目录\claude工作目录\学习\YatoriAndroidWork\tools\bin;C:\msys64\ucrt64\bin;C:\Users\35862\go\bin;' + $env:PATH
 $env:CGO_ENABLED='1'
 
-.\scripts\build-mobilecore.ps1 -Version 0.4.1 -Target android/arm64 -ApiSchemaVersion 1
+.\scripts\build-mobilecore.ps1 -Version 0.4.2 -Target android/arm64 -ApiSchemaVersion 1
 ```
 
 ### 导入 Core 到 Android
@@ -204,7 +216,7 @@ cd "D:\AI\智能体工作目录\claude工作目录\学习\YatoriAndroidWork\yato
 
 .\scripts\import-desktop-core.ps1 `
   -DesktopReleaseDir "D:\AI\智能体工作目录\claude工作目录\学习\yatori-go-desktop-V0.3.4-clean\release" `
-  -Version 0.4.1 `
+  -Version 0.4.2 `
   -ExpectedApiSchemaVersion 1
 ```
 
@@ -213,14 +225,14 @@ cd "D:\AI\智能体工作目录\claude工作目录\学习\YatoriAndroidWork\yato
 ```powershell
 cd "D:\AI\智能体工作目录\claude工作目录\学习\YatoriAndroidWork\yatori-go-android"
 
-.\scripts\build-apk.ps1 -ImportCore -Version 0.4.1 -ExpectedApiSchemaVersion 1
+.\scripts\build-apk.ps1 -ImportCore -Version 0.4.2 -ExpectedApiSchemaVersion 1
 ```
 
 产物：
 
 ```text
 app/build/outputs/apk/debug/app-debug.apk
-release/Yatori-Android-v0.4.1-arm64-debug.apk
+release/Yatori-Android-v0.4.2-arm64-debug.apk
 ```
 
 ## 已知限制

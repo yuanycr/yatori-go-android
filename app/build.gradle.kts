@@ -11,8 +11,8 @@ android {
         applicationId = "app.yatori.android"
         minSdk = 26
         targetSdk = 34
-        versionCode = 41
-        versionName = "0.4.1"
+        versionCode = 42
+        versionName = "0.4.2"
 
         ndk {
             abiFilters += listOf("arm64-v8a")
